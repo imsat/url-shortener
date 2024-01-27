@@ -5,16 +5,14 @@ import Home from './pages/home/Home.vue'
 import Login from './pages/login/Login.vue'
 import Register from './pages/register/Register.vue'
 import Profile from './pages/profile/Profile.vue'
-import Form from './pages/form/Form.vue'
-import CreateForm from './pages/form/CreateForm.vue'
+import CreateUrl from './pages/url/CreateUrl.vue'
 
 const routes = [
-    {path: '/', name: 'home', component: Home},
+    {path: '/', name: 'home', component: Home, meta: {requiresAuth: true}},
     {path: '/login', name: 'login', component: Login, meta: {guest: true}},
     {path: '/register', name: 'register', component: Register, meta: {guest: true}},
     {path: '/profile', name: 'profile', component: Profile, meta: {requiresAuth: true}},
-    {path: '/forms', name: 'forms', component: Form, meta: {requiresAuth: true}},
-    {path: '/forms/create', name: 'forms-create', component: CreateForm, meta: {requiresAuth: true}},
+    {path: '/urls/create', name: 'urls-create', component: CreateUrl, meta: {requiresAuth: true}},
 ]
 
 const router = createRouter({

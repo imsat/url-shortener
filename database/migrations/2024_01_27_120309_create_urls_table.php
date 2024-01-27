@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('original_url');
             $table->string('shortened_url')->unique();
             $table->unsignedInteger('click_count')->default(0);
+            $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
         });
     }

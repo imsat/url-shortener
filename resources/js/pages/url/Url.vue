@@ -3,8 +3,8 @@
         <div class="row">
             <div class="col-md-12">
                 <h4 class="text-body-emphasis">
-                    Feedback Form
-                    <router-link to="/forms/create" class="btn btn-sm btn-primary float-end">Add New</router-link>
+                    Urls
+                    <router-link to="/urls/create" class="btn btn-sm btn-primary float-end">Add New</router-link>
                 </h4>
                 <div class="card">
                     <div class="card-body">
@@ -12,19 +12,26 @@
                             <thead>
                             <tr>
                                 <th>#</th>
-                                <th>Name</th>
-                                <th>Link</th>
-                                <th>Description</th>
+                                <th style="width: 45% !important;">Url</th>
+                                <th>Short Url</th>
+                                <th>Click Count</th>
                             </tr>
                             </thead>
                             <tbody>
-                            <tr v-for="(form, i) in forms" :key="i">
+                            <tr v-for="(url, i) in urls" :key="i">
                                 <th>{{ i + 1 }}</th>
-                                <td>{{ form.name }}</td>
+                                <td>{{ url?.original_url }}</td>
                                 <td>
-                                    <span role="button" class="text-primary">{{appUrl + 'feedbacks/submit/' + form.id}}</span>
+                                    <span
+                                        role="button"
+                                        class="text-primary"
+                                        @click="copyURL"
+                                        v-clipboard="appUrl + '/r/' + url?.shortened_url"
+                                    >
+                                        {{ appUrl + '/r/' + url.shortened_url }}
+                                    </span>
                                 </td>
-                                <td>{{ form.description }}</td>
+                                <td>{{ url?.click_count }}</td>
                             </tr>
                             </tbody>
                         </table>
@@ -38,12 +45,13 @@
 
 <script>
 import {get} from "../../utils/fetchAPI.js";
+import {successToast} from "../../utils/swalUtil.js";
 
 export default {
-    name: "Form",
+    name: "Url",
     data() {
         return {
-            forms: [],
+            urls: [],
             isLoading: false,
             appUrl: import.meta.env.VITE_APP_URL || 'your_app_url/'
         }
@@ -54,9 +62,9 @@ export default {
     methods: {
         async getForms() {
             this.isLoading = true
-            await get('forms')
+            await get('urls')
                 .then(res => {
-                    this.forms = res.data.data
+                    this.urls = res.data.data
                 }).catch(errors => {
                     console.log(errors)
                 })
@@ -65,6 +73,9 @@ export default {
                 })
 
         },
+        copyURL() {
+            successToast('Copy to clipboard successfully')
+        }
     }
 }
 </script>

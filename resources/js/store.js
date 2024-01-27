@@ -21,6 +21,7 @@ export const store = defineStore('store', {
                  remove('token')
                  remove('user')
                  this.isLoggedIn = null;
+                 location.reload()
              })
 
         }

@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Url;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
 
 class UrlController extends Controller
 {
@@ -12,15 +14,11 @@ class UrlController extends Controller
      */
     public function index()
     {
-        //
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
+        $urls = Url::select('id', 'original_url', 'shortened_url', 'click_count')
+            ->where('user_id', Auth::id())
+            ->latest()
+            ->get();
+        return $this->response(true, 'Urls list!', 200, $urls);
     }
 
     /**
@@ -28,38 +26,52 @@ class UrlController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validator = Validator::make($request->all(), [
+            'url' => 'required|url',
+        ]);
+
+        if ($validator->fails()) {
+            return $this->response(false, 'Please provide valid information!', 400, $validator->errors());
+        }
+
+        // Generate a unique short URL
+        $shortenedUrl = $this->generateUniqueShortUrl();
+
+        $url = Url::create([
+            'original_url' => $request->input('url'),
+            'shortened_url' => $shortenedUrl,
+            'user_id' => Auth::id()
+        ]);
+
+        return $this->response(true, 'Created successfully.', 200, $url);
     }
 
     /**
-     * Display the specified resource.
+     * Redirect users according to their provided shortened url
      */
-    public function show(Url $url)
+    public function redirect($shortened_url)
     {
-        //
+        $url = Url::where('shortened_url', $shortened_url)->firstOrFail();
+        $url->click_count += 1;
+        $url->save();
+        return redirect($url->original_url);
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * Generate unique dynamic length of string. Future move it to a helper function for reuse it.
      */
-    public function edit(Url $url)
+    private function generateUniqueShortUrl($length = 6)
     {
-        //
-    }
+        $characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        $shortUrl = '';
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Url $url)
-    {
-        //
-    }
+        do {
+            // Generate a random string of the specified length
+            $shortUrl = substr(str_shuffle($characters), 0, $length);
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Url $url)
-    {
-        //
+            // Check if the generated short URL already exists in the database
+        } while (Url::where('shortened_url', $shortUrl)->exists());
+
+        return $shortUrl;
     }
 }
